@@ -1,0 +1,44 @@
+{
+  "name": "mp3-file-analysis-app",
+  "version": "1.0.0",
+  "description": "MP3 File Analysis App",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --w",
+    "start": "tsc && node dist/index.js",
+    "lint": "eslint src/",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arashlayeghi/mp3-file-analysis-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/arashlayeghi/mp3-file-analysis-app/issues"
+  },
+  "homepage": "https://github.com/arashlayeghi/mp3-file-analysis-app#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^25.2.3",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0",
+    "vitest": "^4.0.18"
+  }
+}
