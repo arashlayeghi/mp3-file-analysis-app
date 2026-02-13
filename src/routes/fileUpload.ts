@@ -1,17 +1,19 @@
 import { unlink } from 'node:fs/promises';
 import { mkdirSync } from 'node:fs';
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
+import { Router, Request, Response, NextFunction } from 'express';
+import multer, { MulterError } from 'multer';
 import { countMP3Frames } from '../services/mp3Parser';
 import { Mp3ParseError } from '../utils/errors';
 
 const router = Router();
 
+const MAX_FILE_SIZE = 500;
+
 mkdirSync('uploads', { recursive: true });
 
 const upload = multer({
   dest: 'uploads/',
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
+  limits: { fileSize: MAX_FILE_SIZE * 1024 * 1024 }, // 500MB
 });
 
 router.post(
@@ -47,6 +49,21 @@ router.post(
     } finally {
       await cleanupFile(filePath);
     }
+  },
+);
+
+router.use(
+  '/file-upload',
+  (error: Error, req: Request, res: Response, next: NextFunction): void => {
+    if (error instanceof MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        res.status(413).json({ error: `File too large. Maximum size is ${MAX_FILE_SIZE}MB` });
+        return;
+      }
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    next(error);
   },
 );
 

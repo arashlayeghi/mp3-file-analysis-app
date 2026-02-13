@@ -45,4 +45,8 @@ describe('POST /file-upload', () => {
       await unlink(tmpPath);
     }
   });
+
+  // NOTE: File size limit (500MB) is enforced by multer configuration.
+  // Testing with actual large files is impractical in unit tests.
+  // This could be verified with an end-to-end test in a staging environment.
 });
