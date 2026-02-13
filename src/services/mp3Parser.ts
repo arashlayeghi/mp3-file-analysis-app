@@ -73,6 +73,8 @@ export interface FrameHeader {
  *   Byte  4:    Version minor
  *   Byte  5:    Flags
  *   Bytes 6-9:  Size of the tag body (syncsafe integer — each byte uses only 7 bits)
+ *
+ *  @see https://id3.org/id3v2.4.0-structure
  */
 export const getID3v2TagSize = async (handle: FileHandle): Promise<number> => {
   const header = Buffer.alloc(ID3V2_HEADER_SIZE);
@@ -124,6 +126,8 @@ export const getID3v2TagSize = async (handle: FileHandle): Promise<number> => {
  *  J = Emphasis (2 bits)
  *
  * We only care about: sync, version, layer, bitrate, sample rate, and padding.
+ *
+ * @see http://www.mp3-tech.org/programmer/frame_header.html
  */
 export const parseFrameHeader = (buffer: Buffer, offset: number): FrameHeader | null => {
   if (offset + FRAME_HEADER_SIZE > buffer.length) return null;
