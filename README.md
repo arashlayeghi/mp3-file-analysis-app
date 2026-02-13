@@ -63,6 +63,7 @@ curl -X POST http://localhost:3000/file-upload \
 |--------|-------------------------------|---------------------------------------------------|
 | 400    | No file uploaded              | `{ "error": "No file uploaded" }`                 |
 | 400    | Invalid file type             | `{ "error": "Invalid file type. Only MP3 files are accepted" }` |
+| 413    | File too large                | `{ "error": "File too large. Maximum size is 500MB" }` |
 | 422    | File cannot be parsed as MP3  | `{ "error": "File is too small to be a valid MP3" }` |
 | 500    | Unexpected server error       | `{ "error": "Internal server error" }`            |
 
