@@ -104,4 +104,8 @@ The parser reads the file in 64KB chunks for constant memory usage regardless of
 | `npm start`      | Build and start production     |
 | `npm test`       | Run tests                      |
 | `npm run lint`   | Run ESLint                     |
-| `npm run format` | Run Prettier                   |
+| `npm run format` | Run Prettier                   |`
+
+## Git Hooks
+
+Pre-commit and pre-push hooks are configured via Husky. Commits are automatically linted and formatted, and tests run before each push.

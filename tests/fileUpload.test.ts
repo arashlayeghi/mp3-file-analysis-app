@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { writeFile, unlink } from 'node:fs/promises';
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import app from '../src/index';
+import app from '../src/app';
 
 const SAMPLE_PATH = resolve(__dirname, '../sample.mp3');
 
