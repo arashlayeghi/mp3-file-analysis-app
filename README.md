@@ -103,9 +103,9 @@ The parser reads the file in 64KB chunks for constant memory usage regardless of
 | `npm run dev`         | Start development server       |
 | `npm start`           | Build and start production     |
 | `npm test`            | Run tests                      |
+| `npm run test:watch`  | Run tests in watch mode        |
 | `npm run lint`        | Run ESLint                     |
 | `npm run format`      | Run Prettier                   |
-| `npm run test:watch`  | Run tests in watch mode        |
 
 ## Git Hooks
 
