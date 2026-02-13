@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { resolve } from 'node:path';
 import { writeFile, unlink } from 'node:fs/promises';
 import { parseFrameHeader, countMP3Frames } from '../src/services/mp3Parser';
+import { Mp3ParseError } from '../src/utils/errors';
 
 const SAMPLE_PATH = resolve(__dirname, '../sample.mp3');
 
@@ -58,7 +59,7 @@ describe('countMP3Frames', () => {
     await writeFile(tmpPath, Buffer.alloc(2));
 
     try {
-      await expect(countMP3Frames(tmpPath)).rejects.toThrow('File is too small to be a valid MP3');
+      await expect(countMP3Frames(tmpPath)).rejects.toThrow(Mp3ParseError);
     } finally {
       await unlink(tmpPath);
     }

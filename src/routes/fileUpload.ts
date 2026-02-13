@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { unlink } from 'node:fs/promises';
 import { countMP3Frames } from '../services/mp3Parser';
+import { Mp3ParseError } from '../utils/errors';
 
 const router = Router();
 
@@ -34,8 +35,12 @@ router.post(
       const frameCount = await countMP3Frames(filePath);
       res.status(200).json({ frameCount });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to parse MP3 file';
-      res.status(422).json({ error: message });
+      if (error instanceof Mp3ParseError) {
+        res.status(422).json({ error: error.message });
+      } else {
+        console.error('Unexpected error processing MP3 file:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     } finally {
       await cleanupFile(filePath);
     }
