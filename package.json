@@ -2,7 +2,7 @@
   "name": "mp3-file-analysis-app",
   "version": "1.0.0",
   "description": "MP3 File Analysis App",
-  "main": "index.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",

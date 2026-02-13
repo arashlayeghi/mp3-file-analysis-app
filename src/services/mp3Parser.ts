@@ -30,6 +30,24 @@ const FRAME_HEADER_SIZE = 4;
  */
 const CHUNK_SIZE = 64 * 1024; // 64KB
 
+/**
+ *   Version bits:
+ *   00 = MPEG Version 2.5  (added later as an extension)
+ *   01 = Reserved
+ *   10 = MPEG Version 2    (came second)
+ *   11 = MPEG Version 1    (came first, was the original - the one we want: Decimal 3)
+ */
+const MPEG_VERSION_1 = 3;
+
+/**
+ *   Layer bits:
+ *   00 = Reserved
+ *   01 = Layer III   (MP3 — the one we want: Decimal 1)
+ *   10 = Layer II
+ *   11 = Layer I
+ */
+const LAYER_III = 1;
+
 export interface FrameHeader {
   frameSize: number;
 }
@@ -60,18 +78,12 @@ export const getID3v2TagSize = async (handle: FileHandle): Promise<number> => {
   const header = Buffer.alloc(ID3V2_HEADER_SIZE);
   const { bytesRead } = await handle.read(header, 0, ID3V2_HEADER_SIZE, 0);
 
-  /**
-   * File is smaller than 10 bytes — can't have an ID3 tag.
-   * Return 0 (audio starts at byte 0)
-   */
   if (bytesRead < ID3V2_HEADER_SIZE) return 0;
-  /** Check if the first 3 bytes spell "ID3". If not, no tag — audio starts at byte 0 */
   if (header.subarray(0, 3).toString('ascii') !== 'ID3') return 0;
 
-  /** Decode the syncsafe integer (bytes 6-9) */
   const tagSize = (header[6] << 21) | (header[7] << 14) | (header[8] << 7) | header[9];
 
-  /**, Add the 10-byte header itself. This is where the first audio frame begins. */
+  /** Add the 10-byte header itself. This is where the first audio frame begins. */
   return tagSize + ID3V2_HEADER_SIZE;
 };
 
@@ -126,25 +138,7 @@ export const parseFrameHeader = (buffer: Buffer, offset: number): FrameHeader | 
   const version = (byte1 >> 3) & 0x03;
   const layer = (byte1 >> 1) & 0x03;
 
-  /**
-   *   Version bits:
-   *   00 = MPEG Version 2.5  (added later as an extension)
-   *   01 = Reserved
-   *   10 = MPEG Version 2    (came second)
-   *   11 = MPEG Version 1    (came first, was the original - the one we want: Decimal 3)
-   */
-  const MPEG_VERSION_1 = 3;
-
-  /**
-   *   Layer bits:
-   *   00 = Reserved
-   *   01 = Layer III   (MP3 — the one we want: Decimal 1)
-   *   10 = Layer II
-   *   11 = Layer I
-   */
-  const LAYER_III = 1;
-
-  // Only handle MPEG1 (version=3) Layer III (layer=1) and consdier others out of scope
+  // Only handle MPEG1 (version=3) Layer III (layer=1) and consider others out of scope
   if (version !== MPEG_VERSION_1 || layer !== LAYER_III) return null;
 
   const bitrateIndex = (byte2 >> 4) & 0x0f;
@@ -154,7 +148,6 @@ export const parseFrameHeader = (buffer: Buffer, offset: number): FrameHeader | 
   const bitrate = MPEG1_LAYER3_BITRATES[bitrateIndex];
   const sampleRate = MPEG1_SAMPLE_RATES[sampleRateIndex];
 
-  // validate bitrate and sampleRate to not use the invalid values -> invalid frame
   if (bitrate === 0 || sampleRate === 0) return null;
 
   const frameSize = Math.floor((144 * (bitrate * 1000)) / sampleRate) + padding;
@@ -170,14 +163,12 @@ export const countMP3Frames = async (filePath: string): Promise<number> => {
   const handle = await open(filePath, 'r');
 
   try {
-    // total size of the file in bytes
     const { size: fileSize } = await handle.stat();
 
     if (fileSize < FRAME_HEADER_SIZE) {
       throw new Mp3ParseError('File is too small to be a valid MP3');
     }
 
-    // Find where the actual audio starts (skip the ID3v2 tag if present)
     let fileOffset = await getID3v2TagSize(handle);
     let frameCount = 0;
     // We reuse the same buffer for every chunk read instead of allocating new ones.
