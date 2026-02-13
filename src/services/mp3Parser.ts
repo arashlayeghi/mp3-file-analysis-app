@@ -8,14 +8,16 @@ import { Mp3ParseError } from '../utils/errors';
  * Index 0 and 15 are reserved/invalid, so they're 0.
  * Our sample file uses index 5 → 64 kbps.
  */
-const MPEG1_LAYER3_BITRATES = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0];
+const MPEG1_LAYER3_BITRATES: readonly number[] = [
+  0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0,
+];
 
 /**
  * Sample rate lookup table for MPEG1 (Hz)
  * Sample rate index (2 bits = values 0-3) maps to Hz. Index 3 is reserved and invalid.
  * Our sample uses index 0 → 44100 Hz (CD quality).
  */
-const MPEG1_SAMPLE_RATES = [44100, 48000, 32000, 0];
+const MPEG1_SAMPLE_RATES: readonly number[] = [44100, 48000, 32000, 0];
 
 /** The exact size of an ID3v2 header */
 const ID3V2_HEADER_SIZE = 10;
