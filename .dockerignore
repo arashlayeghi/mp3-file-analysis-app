@@ -4,3 +4,4 @@ uploads
 .git
 .husky
 *.mp3
+.DS_Store
