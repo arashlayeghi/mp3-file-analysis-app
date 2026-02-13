@@ -8,7 +8,7 @@
     "build": "tsc --w",
     "start": "tsc && node dist/server.js",
     "lint": "eslint src/",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
