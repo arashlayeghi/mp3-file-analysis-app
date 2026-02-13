@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import app from '../src/index';
+
+const SAMPLE_PATH = resolve(__dirname, '../sample.mp3');
 
 describe('POST /file-upload', () => {
   it('should return the correct frame count for a valid MP3 file', async () => {
-    const res = await request(app)
-      .post('/file-upload')
-      .attach('file', resolve(__dirname, '../sample.mp3'));
+    const res = await request(app).post('/file-upload').attach('file', SAMPLE_PATH);
 
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/application\/json/);
