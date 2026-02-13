@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
 import { writeFile, unlink } from 'node:fs/promises';
+import { describe, it, expect } from 'vitest';
 import { parseFrameHeader, countMP3Frames } from '../src/services/mp3Parser';
+import { Mp3ParseError } from '../src/utils/errors';
 
 const SAMPLE_PATH = resolve(__dirname, '../sample.mp3');
 
@@ -13,7 +15,7 @@ describe('parseFrameHeader', () => {
     const result = parseFrameHeader(buffer, 0);
 
     expect(result).not.toBeNull();
-    expect(result!.frameSize).toBe(208); // floor(144 * 64000 / 44100) + 0
+    expect(result?.frameSize).toBe(208); // floor(144 * 64000 / 44100) + 0
   });
 
   it('should return null for missing sync word', () => {
@@ -43,7 +45,7 @@ describe('parseFrameHeader', () => {
     const result = parseFrameHeader(buffer, 0);
 
     expect(result).not.toBeNull();
-    expect(result!.frameSize).toBe(209); // floor(144 * 64000 / 44100) + 1
+    expect(result?.frameSize).toBe(209); // floor(144 * 64000 / 44100) + 1
   });
 });
 
@@ -54,18 +56,18 @@ describe('countMP3Frames', () => {
   });
 
   it('should throw an error for a file that is too small', async () => {
-    const tmpPath = resolve(__dirname, '../tmp_tiny.bin');
+    const tmpPath = join(tmpdir(), 'test-tiny.bin');
     await writeFile(tmpPath, Buffer.alloc(2));
 
     try {
-      await expect(countMP3Frames(tmpPath)).rejects.toThrow('File is too small to be a valid MP3');
+      await expect(countMP3Frames(tmpPath)).rejects.toThrow(Mp3ParseError);
     } finally {
       await unlink(tmpPath);
     }
   });
 
   it('should return 0 for a file with no valid frames', async () => {
-    const tmpPath = resolve(__dirname, '../tmp_empty.bin');
+    const tmpPath = join(tmpdir(), 'test-empty.bin');
     await writeFile(tmpPath, Buffer.alloc(1024, 0x00));
 
     try {

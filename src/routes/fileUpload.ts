@@ -1,9 +1,13 @@
+import { unlink } from 'node:fs/promises';
+import { mkdirSync } from 'node:fs';
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { unlink } from 'node:fs/promises';
 import { countMP3Frames } from '../services/mp3Parser';
+import { Mp3ParseError } from '../utils/errors';
 
 const router = Router();
+
+mkdirSync('uploads', { recursive: true });
 
 const upload = multer({
   dest: 'uploads/',
@@ -21,10 +25,10 @@ router.post(
 
     const { originalname, mimetype, path: filePath } = req.file;
 
-    const allowedMimeTypes = ['audio/mpeg', 'audio/mp3', 'application/octet-stream'];
+    const isValidMimeType = ['audio/mpeg', 'audio/mp3'].includes(mimetype);
     const isValidExtension = originalname.toLowerCase().endsWith('.mp3');
 
-    if (!allowedMimeTypes.includes(mimetype) && !isValidExtension) {
+    if (!isValidMimeType && !isValidExtension) {
       await cleanupFile(filePath);
       res.status(400).json({ error: 'Invalid file type. Only MP3 files are accepted' });
       return;
@@ -34,8 +38,12 @@ router.post(
       const frameCount = await countMP3Frames(filePath);
       res.status(200).json({ frameCount });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to parse MP3 file';
-      res.status(422).json({ error: message });
+      if (error instanceof Mp3ParseError) {
+        res.status(422).json({ error: error.message });
+      } else {
+        console.error('Unexpected error processing MP3 file:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     } finally {
       await cleanupFile(filePath);
     }

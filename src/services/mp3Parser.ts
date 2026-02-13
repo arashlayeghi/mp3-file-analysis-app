@@ -1,4 +1,5 @@
 import { open, FileHandle } from 'node:fs/promises';
+import { Mp3ParseError } from '../utils/errors';
 
 /**
  * Bitrate lookup table for MPEG1 Layer III (kbps)
@@ -173,7 +174,7 @@ export const countMP3Frames = async (filePath: string): Promise<number> => {
     const { size: fileSize } = await handle.stat();
 
     if (fileSize < FRAME_HEADER_SIZE) {
-      throw new Error('File is too small to be a valid MP3');
+      throw new Mp3ParseError('File is too small to be a valid MP3');
     }
 
     // Find where the actual audio starts (skip the ID3v2 tag if present)
