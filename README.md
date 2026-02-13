@@ -76,7 +76,8 @@ npm test
 
 ### MP3 Frame Parsing
 
-The parser reads the file in 64KB chunks for constant memory usage regardless of file size. For each chunk, it:
+The parser implements the [MPEG Audio Frame Header](http://www.mp3-tech.org/programmer/frame_header.html) specification. It reads the file in 64KB chunks for constant memory usage regardless of file size. For each chunk, it:
+
 
 1. Skips the ID3v2 metadata tag (if present) by reading the syncsafe integer size
 2. Scans for the 11-bit sync word (`0xFF` followed by `0xE0` mask) that marks each frame header
