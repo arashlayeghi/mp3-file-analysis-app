@@ -1,32 +1,78 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
-import { countMP3Frames } from '../src/services/mp3Parser';
+import { resolve } from 'node:path';
+import { writeFile, unlink } from 'node:fs/promises';
+import { parseFrameHeader, countMP3Frames } from '../src/services/mp3Parser';
+
+const SAMPLE_PATH = resolve(__dirname, '../sample.mp3');
+
+describe('parseFrameHeader', () => {
+  it('should parse a valid MPEG1 Layer III frame header', () => {
+    // 0xFF 0xFB = sync + MPEG1 + Layer III + no CRC
+    // 0x50 = bitrate index 5 (64kbps), sample rate index 0 (44100), no padding
+    const buffer = Buffer.from([0xff, 0xfb, 0x50, 0x00]);
+    const result = parseFrameHeader(buffer, 0);
+
+    expect(result).not.toBeNull();
+    expect(result!.frameSize).toBe(208); // floor(144 * 64000 / 44100) + 0
+  });
+
+  it('should return null for missing sync word', () => {
+    const buffer = Buffer.from([0x00, 0x00, 0x00, 0x00]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should return null for invalid bitrate index (0)', () => {
+    const buffer = Buffer.from([0xff, 0xfb, 0x00, 0x00]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should return null for non-MPEG1 version', () => {
+    // version bits = 10 (MPEG2 instead of MPEG1)
+    const buffer = Buffer.from([0xff, 0xf3, 0x50, 0x00]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should return null if buffer is too short', () => {
+    const buffer = Buffer.from([0xff, 0xfb]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should account for padding bit in frame size', () => {
+    // 0x52 = bitrate index 5 (64kbps), sample rate index 0 (44100), padding = 1
+    const buffer = Buffer.from([0xff, 0xfb, 0x52, 0x00]);
+    const result = parseFrameHeader(buffer, 0);
+
+    expect(result).not.toBeNull();
+    expect(result!.frameSize).toBe(209); // floor(144 * 64000 / 44100) + 1
+  });
+});
 
 describe('countMP3Frames', () => {
-  it('should return the correct frame count for the sample file', () => {
-    const buffer = readFileSync(resolve(__dirname, '../sample.mp3'));
-    expect(countMP3Frames(buffer)).toBe(6090);
+  it('should return the correct frame count for the sample MP3 file', async () => {
+    const frameCount = await countMP3Frames(SAMPLE_PATH);
+    expect(frameCount).toBe(6090);
   });
 
-  it('should throw for a buffer that is too small', () => {
-    const buffer = Buffer.alloc(2);
-    expect(() => countMP3Frames(buffer)).toThrow('File is too small to be a valid MP3');
+  it('should throw an error for a file that is too small', async () => {
+    const tmpPath = resolve(__dirname, '../tmp_tiny.bin');
+    await writeFile(tmpPath, Buffer.alloc(2));
+
+    try {
+      await expect(countMP3Frames(tmpPath)).rejects.toThrow('File is too small to be a valid MP3');
+    } finally {
+      await unlink(tmpPath);
+    }
   });
 
-  it('should return 0 for a buffer with no valid frames', () => {
-    const buffer = Buffer.alloc(1024, 0x00);
-    expect(countMP3Frames(buffer)).toBe(0);
-  });
+  it('should return 0 for a file with no valid frames', async () => {
+    const tmpPath = resolve(__dirname, '../tmp_empty.bin');
+    await writeFile(tmpPath, Buffer.alloc(1024, 0x00));
 
-  it('should handle an MP3 without an ID3 tag', () => {
-    const fullBuffer = readFileSync(resolve(__dirname, '../sample.mp3'));
-    const strippedBuffer = fullBuffer.subarray(44);
-    expect(countMP3Frames(strippedBuffer)).toBe(6090);
-  });
-
-  it('should not count frames with invalid bitrate index', () => {
-    const buffer = Buffer.from([0xff, 0xfb, 0x00, 0x00, ...new Array(200).fill(0x00)]);
-    expect(countMP3Frames(buffer)).toBe(0);
+    try {
+      const frameCount = await countMP3Frames(tmpPath);
+      expect(frameCount).toBe(0);
+    } finally {
+      await unlink(tmpPath);
+    }
   });
 });
