@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { writeFile, unlink } from 'node:fs/promises';
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
@@ -32,7 +33,7 @@ describe('POST /file-upload', () => {
   });
 
   it('should return 422 for an invalid MP3 file', async () => {
-    const tmpPath = resolve(__dirname, '../tmp_invalid.bin');
+    const tmpPath = join(tmpdir(), 'test-invalid.mp3');
     await writeFile(tmpPath, Buffer.alloc(2));
 
     try {
