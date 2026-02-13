@@ -47,6 +47,25 @@ describe('parseFrameHeader', () => {
     expect(result).not.toBeNull();
     expect(result?.frameSize).toBe(209); // floor(144 * 64000 / 44100) + 1
   });
+
+  it('should return null for reserved bitrate index (15)', () => {
+    // 0xF0 = bitrate index 15 (reserved), sample rate index 0
+    const buffer = Buffer.from([0xff, 0xfb, 0xf0, 0x00]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should return null for reserved sample rate index (3)', () => {
+    // 0x5C = bitrate index 5 (64kbps), sample rate index 3 (reserved)
+    const buffer = Buffer.from([0xff, 0xfb, 0x5c, 0x00]);
+    expect(parseFrameHeader(buffer, 0)).toBeNull();
+  });
+
+  it('should parse a frame header at a non-zero offset', () => {
+    const buffer = Buffer.from([0x00, 0x00, 0xff, 0xfb, 0x50, 0x00]);
+    const result = parseFrameHeader(buffer, 2);
+    expect(result).not.toBeNull();
+    expect(result?.frameSize).toBe(208);
+  });
 });
 
 describe('countMP3Frames', () => {
@@ -76,24 +95,5 @@ describe('countMP3Frames', () => {
     } finally {
       await unlink(tmpPath);
     }
-  });
-
-  it('should return null for reserved bitrate index (15)', () => {
-    // 0xF0 = bitrate index 15 (reserved), sample rate index 0
-    const buffer = Buffer.from([0xff, 0xfb, 0xf0, 0x00]);
-    expect(parseFrameHeader(buffer, 0)).toBeNull();
-  });
-
-  it('should return null for reserved sample rate index (3)', () => {
-    // 0x5C = bitrate index 5 (64kbps), sample rate index 3 (reserved)
-    const buffer = Buffer.from([0xff, 0xfb, 0x5c, 0x00]);
-    expect(parseFrameHeader(buffer, 0)).toBeNull();
-  });
-
-  it('should parse a frame header at a non-zero offset', () => {
-    const buffer = Buffer.from([0x00, 0x00, 0xff, 0xfb, 0x50, 0x00]);
-    const result = parseFrameHeader(buffer, 2);
-    expect(result).not.toBeNull();
-    expect(result?.frameSize).toBe(208);
   });
 });
