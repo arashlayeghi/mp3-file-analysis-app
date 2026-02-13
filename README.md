@@ -8,6 +8,7 @@ A TypeScript REST API that accepts an MP3 file upload and returns the number of 
 - npm
 
 ## Installation
+
 ```bash
 nvm use
 npm install
@@ -16,16 +17,24 @@ npm install
 ## Running the Application
 
 ### Development
+
 ```bash
 npm run dev
 ```
 
 ### Production
+
 ```bash
 npm start
 ```
 
 The server starts on `http://localhost:3000` by default. Set the `PORT` environment variable to change it.
+
+### Docker
+
+```bash
+docker compose up --build
+```
 
 ## API
 
@@ -34,12 +43,14 @@ The server starts on `http://localhost:3000` by default. Set the `PORT` environm
 Accepts an MP3 file and returns the frame count.
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3000/file-upload \
   -F "file=@./sample.mp3"
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "frameCount": 6090
@@ -56,6 +67,7 @@ curl -X POST http://localhost:3000/file-upload \
 | 500    | Unexpected server error       | `{ "error": "Internal server error" }`            |
 
 ## Testing
+
 ```bash
 npm test
 ```
@@ -83,14 +95,13 @@ The parser reads the file in 64KB chunks for constant memory usage regardless of
 
 - Validate frame consistency across consecutive frames to prevent false sync detection in corrupted files
 - Add request rate limiting for production use
-- Add Docker support for containerised deployment
 
 ## Scripts
 
-| Script         | Description                    |
-|----------------|--------------------------------|
-| `npm run dev`  | Start development server       |
-| `npm start`    | Build and start production     |
-| `npm test`     | Run tests                      |
-| `npm run lint` | Run ESLint                     |
-| `npm run format` | Run Prettier                 |
+| Script           | Description                    |
+|------------------|--------------------------------|
+| `npm run dev`    | Start development server       |
+| `npm start`      | Build and start production     |
+| `npm test`       | Run tests                      |
+| `npm run lint`   | Run ESLint                     |
+| `npm run format` | Run Prettier                   |
