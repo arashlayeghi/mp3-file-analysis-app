@@ -167,7 +167,8 @@ export const parseFrameHeader = (buffer: Buffer, offset: number): FrameHeader | 
  */
 export const countMP3Frames = async (filePath: string): Promise<number> => {
   const handle = await open(filePath, 'r');
-
+  // NOTE: Could use `await using` (TC39 Explicit Resource Management) once
+  // Node.js FileHandle natively implements Symbol.asyncDispose.
   try {
     const { size: fileSize } = await handle.stat();
 
