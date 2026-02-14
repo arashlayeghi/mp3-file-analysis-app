@@ -26,7 +26,6 @@
   "keywords": [],
   "author": "Arash Layeghi",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/arashlayeghi/mp3-file-analysis-app/issues"
   },
