@@ -47,6 +47,6 @@ describe('POST /file-upload', () => {
   });
 
   // NOTE: File size limit (500MB) is enforced by multer configuration.
-  // Testing with actual large files is impractical in unit tests.
+  // Testing with actual large files is impractical in integration tests.
   // This could be verified with an end-to-end test in a staging environment.
 });
