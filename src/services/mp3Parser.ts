@@ -87,7 +87,7 @@ export const getID3v2TagSize = async (handle: FileHandle): Promise<number> => {
 
   const tagSize = (header[6] << 21) | (header[7] << 14) | (header[8] << 7) | header[9];
 
-  /** Add the 10-byte header itself. This is where the first audio frame begins. */
+  // Add the 10-byte header itself. This is where the first audio frame begins.
   return tagSize + ID3V2_HEADER_SIZE;
 };
 
